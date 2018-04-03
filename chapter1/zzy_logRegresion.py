@@ -38,22 +38,26 @@ dic = unpickle("data\\test_batch")
 data_test = dic[b'data'].reshape(10000, 3, 32, 32)
 labels_test = np.array(dic[b'labels'])
 
-data_train = data_train.reshape(50000, 3, 32, 32)
+try:
+    data_train = np.load("data\\data_sum.npy")
+    print("file is here!")
+except FileNotFoundError:
+    print("file isn't here!")
+    data_train = data_train.reshape(50000, 3, 32, 32)
+    temp = np.zeros([32, 32, 3])
+    temp1 = np.zeros([50000, 32, 32, 3])
 
-temp = np.zeros([32, 32, 3])
-temp1 = np.zeros([50000, 32, 32, 3])
+    for i in range(len(data_train)):
+        for j in range(32):
+            for k in range(32):
+                temp[j][k][0] = data_train[i][0][j][k]
+                temp[j][k][1] = data_train[i][1][j][k]
+                temp[j][k][2] = data_train[i][2][j][k]
+        temp1[i] = temp
 
-for i in range(len(data_train)):
-    for j in range(32):
-        for k in range(32):
-            temp[j][k][0] = data_train[i][0][j][k]
-            temp[j][k][1] = data_train[i][1][j][k]
-            temp[j][k][2] = data_train[i][2][j][k]
-    temp1[i] = temp
+    data_train = temp1
 
-data_train = temp1
-
-
+    np.save("data\\data_sum.npy", temp1)
 
 # print('Training data shape: ', data_train.shape)
 # print('Training labels shape: ', labels_train.shape)
