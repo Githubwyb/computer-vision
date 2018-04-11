@@ -9,7 +9,9 @@ from skimage.color import rgb2gray
 from skimage import data, exposure
 from skimage.feature import local_binary_pattern
 from sklearn import neighbors
+from sklearn.linear_model import LogisticRegression
 from sklearn import svm
+import time
 
 def unpickle(file):
     with open(file, 'rb') as fo:
@@ -108,6 +110,11 @@ mask = list(range(num_test))
 data_test = data_test[mask]
 labels_test = labels_test[mask]
 
+from skimage.feature import hog
+from skimage.color import rgb2gray
+from skimage import data, exposure
+from skimage.feature import local_binary_pattern
+
 data_train_hog = np.array([hog(rgb2gray(image), orientations = 8, pixels_per_cell = (16, 16), cells_per_block = (1, 1)) for image in data_train])
 data_test_hog = np.array([hog(rgb2gray(image), orientations = 8, pixels_per_cell = (16, 16), cells_per_block = (1, 1)) for image in data_test])
 
@@ -118,36 +125,79 @@ data_train_row = np.reshape(data_train, (data_train.shape[0], -1))
 data_test_row = np.reshape(data_test, (data_test.shape[0], -1))
 # print(data_train_row.shape, data_test_row.shape)
 
-# n_neightbors = 5
-# knn = neighbors.KNeighborsClassifier(n_neightbors, weights = 'uniform')
-# knn.fit([data_train_row, data_train_lbp], labels_train)
-# print('KNN where n = 5 and input are row data', knn.score([data_test_row, data_train_row], labels_test))
 
-# n_neightbors = 5
-# knn_hog = neighbors.KNeighborsClassifier(n_neightbors, weights = 'uniform')
-# knn_hog.fit(data_train_hog, labels_train)
-# print('KNN where n = 5 and input are hog data', knn_hog.score(data_test_hog, labels_test))
+start = time.clock()
 
-# n_neightbors = 5
-# knn_lbp = neighbors.KNeighborsClassifier(n_neightbors, weights = 'uniform')
-# knn_lbp.fit(data_train_lbp, labels_train)
-# print('KNN where n = 5 and input are lbp data', knn_lbp.score(data_test_lbp, labels_test))
+n_neightbors = 5
+knn = neighbors.KNeighborsClassifier(n_neightbors, weights = 'uniform')
+knn.fit(data_train_row, labels_train)
+print('KNN where n = 5 and input are row data', knn.score(data_test_row, labels_test))
 
-C = 1.0
-X_train = data_train_row
-Y_train = labels_train
-X_test = data_test_row
-Y_test = labels_test
-titles = ('SVC with linear kernel',
-    'LinearSVC(linear kernel)',
-    'SVC with RBF kernel',
-    'SVC with polynomial(degree 3) kernel')
-models = (svm.SVC(kernel = 'linear', C = C),
-    svm.LinearSVC(C = C),
-    svm.SVC(kernel = 'rbf', gamma = 0.7, C = C),
-    svm.SVC(kernel = 'poly', degree = 3, C = C))
-models = (clf.fit(X_train, Y_train) for clf in models)
-for svmclf, title in zip(models, titles):
-    print(title, ': ', svmclf.score(X_test, Y_test))
+end = time.clock()
+print("run time: ", end - start)
+
+start = time.clock()
+
+n_neightbors = 5
+knn_hog = neighbors.KNeighborsClassifier(n_neightbors, weights = 'uniform')
+knn_hog.fit(data_train_hog, labels_train)
+print('KNN where n = 5 and input are hog data', knn_hog.score(data_test_hog, labels_test))
+
+end = time.clock()
+print("run time: ", end - start)
+
+start = time.clock()
+
+n_neightbors = 5
+knn_lbp = neighbors.KNeighborsClassifier(n_neightbors, weights = 'uniform')
+knn_lbp.fit(data_train_lbp, labels_train)
+print('KNN where n = 5 and input are lbp data', knn_lbp.score(data_test_lbp, labels_test))
+
+end = time.clock()
+print("run time: ", end - start)
+
+# start = time.clock()
+
+# lr = LogisticRegression(C = 1e5, multi_class = 'multinomial', penalty = 'l2', solver = 'sag', tol = 0.1)
+# lr.fit(data_train_row, labels_train)
+# print('The accuracy of sag LogisticRegression is', lr.score(data_test_row, labels_test))
+
+# end = time.clock()
+# print("run time: ", end - start)
+
+# start = time.clock()
+
+# lr = LogisticRegression(C=1e5, multi_class='multinomial', penalty='l2', solver='sag', tol=0.1)
+# lr.fit(data_train_lbp, labels_train)
+# print('The accuracy of sag(lbp) LogisticRegression is', lr.score(data_test_lbp, labels_test))
+
+# end = time.clock()
+# print("run time: ", end - start)
+
+# start = time.clock()
+
+# lr = LogisticRegression(C=1e5, multi_class='multinomial', penalty='l2', solver='sag', tol=0.1)
+# lr.fit(data_train_hog, labels_train)
+# print('The accuracy of sag(hog) LogisticRegression is', lr.score(data_test_hog, labels_test))
+
+# end = time.clock()
+# print("run time: ", end - start)
+
+# C = 1.0
+# X_train = data_train_row
+# Y_train = labels_train
+# X_test = data_test_row
+# Y_test = labels_test
+# titles = ('SVC with linear kernel',
+#     'LinearSVC(linear kernel)',
+#     'SVC with RBF kernel',
+#     'SVC with polynomial(degree 3) kernel')
+# models = (svm.SVC(kernel = 'linear', C = C),
+#     svm.LinearSVC(C = C),
+#     svm.SVC(kernel = 'rbf', gamma = 0.7, C = C),
+#     svm.SVC(kernel = 'poly', degree = 3, C = C))
+# models = (clf.fit(X_train, Y_train) for clf in models)
+# for svmclf, title in zip(models, titles):
+#     print(title, ': ', svmclf.score(X_test, Y_test))
 
 
