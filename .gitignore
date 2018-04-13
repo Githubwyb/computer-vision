@@ -2,7 +2,7 @@
 /*
 !/README.md
 !/.gitignore
-!/chapter*
+!/project*
 
-/chapter*/*
-!/chapter*/*.py
+/project*/*
+!/project*/*.py
